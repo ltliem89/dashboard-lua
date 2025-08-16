@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Bảng điều khiển Giám sát Lúa&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; background-color: #f7f9fc; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.card { background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>h1, h2 { color: #1a2533; border-bottom: 2px solid #eef1f5; padding-bottom: 10px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>#temp-value, #humi-value { font-size: 2.5em; font-weight: bold; color: #007BFF; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>#disease-info { font-size: 1.2em; color: #DC3545; min-height: 50px; font-weight: bold;}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>#status { font-size: 0.9em; color: #6c757d; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;h1&gt;Bảng điều khiển Giám sát Lúa - Trạng thái trực tiếp&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;p id="status"&gt;Đang kết nối đến Broker...&lt;/p&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;h2&gt;Nhiệt độ Đất&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p&gt;&lt;span id="temp-value"&gt;--&lt;/span&gt; °C&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;h2&gt;Độ ẩm Đất&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p&gt;&lt;span id="humi-value"&gt;--&lt;/span&gt; %&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;h2&gt;Thông tin Bệnh&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p id="disease-info"&gt;Chưa có thông tin&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// ================== CẤU HÌNH KẾT NỐI CỦA BẠN ==================</p>
+<p class="p1"><span class="Apple-converted-space">        </span>var brokerHost = "75330e23591346938c002c40c2dce261.s1.eu.hivemq.cloud"; // &lt;-- Dán URL Broker của bạn vào đây</p>
+<p class="p1"><span class="Apple-converted-space">        </span>var brokerPort = 8884; // Port WebSocket an toàn (thường là 8884 cho HiveMQ Cloud)</p>
+<p class="p1"><span class="Apple-converted-space">        </span>var mqttUser = "TEN_USER_CUA_BAN"; <span class="Apple-converted-space">    </span>// &lt;-- Điền Username HiveMQ bạn đã tạo</p>
+<p class="p1"><span class="Apple-converted-space">        </span>var mqttPass = "MAT_KHAU_CUA_BAN"; <span class="Apple-converted-space">    </span>// &lt;-- Điền Password HiveMQ bạn đã tạo</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>var sensorTopic = "DuAnLua/sensors"; <span class="Apple-converted-space">  </span>// Kênh (topic) lắng nghe dữ liệu cảm biến</p>
+<p class="p1"><span class="Apple-converted-space">        </span>var diseaseTopic = "DuAnLua/disease";<span class="Apple-converted-space">  </span>// Kênh (topic) lắng nghe thông tin bệnh</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// =============================================================</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>var clientID = "WebAppClient_" + parseInt(Math.random() * 1000);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Tạo một đối tượng client MQTT mới</p>
+<p class="p1"><span class="Apple-converted-space">        </span>var client = new Paho.MQTT.Client(brokerHost, brokerPort, clientID);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Đặt các hàm callback</p>
+<p class="p1"><span class="Apple-converted-space">        </span>client.onConnectionLost = onConnectionLost;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>client.onMessageArrived = onMessageArrived;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Cấu hình thông tin kết nối</p>
+<p class="p1"><span class="Apple-converted-space">        </span>var options = {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>onSuccess: onConnect,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>onFailure: onConnectionLost,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>userName: mqttUser,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>password: mqttPass,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>useSSL: true // Bắt buộc dùng kết nối an toàn với HiveMQ Cloud</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Bắt đầu kết nối</p>
+<p class="p1"><span class="Apple-converted-space">        </span>client.connect(options);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Hàm này sẽ được gọi khi kết nối thành công</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function onConnect() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>console.log("Đã kết nối MQTT!");</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById("status").textContent = "Đã kết nối! Đang chờ dữ liệu...";</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Đăng ký (subscribe) để lắng nghe tin nhắn từ các kênh</p>
+<p class="p1"><span class="Apple-converted-space">            </span>client.subscribe(sensorTopic);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>client.subscribe(diseaseTopic);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Hàm này được gọi khi mất kết nối</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function onConnectionLost(responseObject) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (responseObject.errorCode !== 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById("status").textContent = "Mất kết nối! Đang thử lại...";</p>
+<p class="p1"><span class="Apple-converted-space">                </span>console.log("Mất kết nối: " + responseObject.errorMessage);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Hàm này được gọi mỗi khi có tin nhắn mới đến</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function onMessageArrived(message) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Cập nhật thông tin bệnh</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (message.destinationName === diseaseTopic) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById("disease-info").textContent = message.payloadString;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Cập nhật thông số cảm biến</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (message.destinationName === sensorTopic) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>var payload = message.payloadString;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Kiểm tra xem payload có phải là chuỗi key=value không</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if(payload.includes("=")){</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>var params = new URLSearchParams(payload);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>var temp = params.get('t'); // Lấy giá trị của 't' (nhiệt độ)</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>var humi = params.get('h'); // Lấy giá trị của 'h' (độ ẩm)</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if(temp) document.getElementById("temp-value").textContent = parseFloat(temp).toFixed(1);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if(humi) document.getElementById("humi-value").textContent = parseFloat(humi).toFixed(0);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>} else { // Nếu là chuỗi lỗi thì hiển thị ra</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>document.getElementById("temp-value").textContent = payload;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>document.getElementById("humi-value").textContent = payload;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
